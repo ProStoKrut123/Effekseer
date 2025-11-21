@@ -69,10 +69,12 @@ protected:
 	InstanceCustomData customDataValues2;
 
 	SIMD::Vec3f prevPosition_;
-	SIMD::Vec3f prevGlobalPosition_;
+        SIMD::Vec3f prevGlobalPosition_;
 
-	SIMD::Vec3f parentPosition_;
-	SIMD::Vec3f steeringVec_;
+        SIMD::Vec3f parentPosition_;
+        SIMD::Vec3f steeringVec_;
+
+        Vector2D phaseUV_ = Vector2D(0.0f, 0.0f);
 
 public:
 	static const int32_t ChildrenMax = 16;
@@ -220,9 +222,14 @@ public:
 
 	void Kill();
 
-	RectF GetUV(const int32_t index) const;
+        RectF GetUV(const int32_t index) const;
 
-	RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
+        RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
+
+        Vector2D GetPhaseUV() const
+        {
+                return phaseUV_;
+        }
 
 	//! get custom data
 	std::array<float, 4> GetCustomData(int32_t index) const;
