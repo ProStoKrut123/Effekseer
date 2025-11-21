@@ -133,10 +133,12 @@ void EffectNodeModel::Rendering(const Instance& instance, const Instance* next_i
 
 		instanceParameter.UV = instance.GetUV(0);
 		instanceParameter.AlphaUV = instance.GetUV(1);
-		instanceParameter.UVDistortionUV = instance.GetUV(2);
-		instanceParameter.BlendUV = instance.GetUV(3);
-		instanceParameter.BlendAlphaUV = instance.GetUV(4);
-		instanceParameter.BlendUVDistortionUV = instance.GetUV(5);
+                instanceParameter.UVDistortionUV = instance.GetUV(2);
+                instanceParameter.BlendUV = instance.GetUV(3);
+                instanceParameter.BlendAlphaUV = instance.GetUV(4);
+                instanceParameter.BlendUVDistortionUV = instance.GetUV(5);
+
+                instanceParameter.PhaseUV = instance.GetPhaseUV();
 
 		instanceParameter.FlipbookIndexAndNextRate = instance.GetFlipbookIndexAndNextRate();
 

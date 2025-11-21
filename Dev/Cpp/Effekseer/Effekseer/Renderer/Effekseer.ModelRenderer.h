@@ -76,11 +76,13 @@ public:
 
 		float ViewOffsetDistance;
 
-		Color AllColor;
-		int32_t Time;
-		std::array<float, 4> CustomData1;
-		std::array<float, 4> CustomData2;
-	};
+                Color AllColor;
+                int32_t Time;
+                std::array<float, 4> CustomData1;
+                std::array<float, 4> CustomData2;
+
+                Vector2D PhaseUV;
+        };
 
 public:
 	ModelRenderer()

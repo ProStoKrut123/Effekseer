@@ -1,5 +1,6 @@
 ﻿#include "Effekseer.Instance.h"
 #include "Effekseer.Curve.h"
+#include <cmath>
 #include "Effekseer.Effect.h"
 #include "Effekseer.EffectImplemented.h"
 #include "Effekseer.EffectNode.h"
@@ -220,9 +221,11 @@ void Instance::Initialize(Instance* parent, float spawnDeltaFrame, int32_t insta
 
 	spawnDeltaFrame_ = spawnDeltaFrame;
 
-	m_InstanceNumber = instanceNumber;
+        m_InstanceNumber = instanceNumber;
 
-	m_IsFirstTime = true;
+        m_IsFirstTime = true;
+
+        phaseUV_ = Vector2D(0.0f, 0.0f);
 
 	auto instanceGlobal = this->m_pContainer->GetRootInstance();
 
@@ -422,12 +425,25 @@ void Instance::Update(float deltaFrame, bool shown)
 	}
 
 	// step time
-	// frame 0 - generated time
-	// frame 1- now
-	if (is_time_step_allowed)
-	{
-		m_LivingTime += deltaFrame;
-	}
+        // frame 0 - generated time
+        // frame 1- now
+        if (is_time_step_allowed)
+        {
+                m_LivingTime += deltaFrame;
+
+                phaseUV_.X += deltaFrame;
+                phaseUV_.Y += deltaFrame;
+
+                if (phaseUV_.X >= 1.0f || phaseUV_.X <= -1.0f)
+                {
+                        phaseUV_.X = std::fmod(phaseUV_.X, 1.0f);
+                }
+
+                if (phaseUV_.Y >= 1.0f || phaseUV_.Y <= -1.0f)
+                {
+                        phaseUV_.Y = std::fmod(phaseUV_.Y, 1.0f);
+                }
+        }
 
 	UpdateTransform(deltaFrame);
 
