@@ -150,7 +150,21 @@ const SIMD::Vec3f& InstanceGlobal::GetTargetLocation() const
 
 void InstanceGlobal::SetTargetLocation(const Vector3D& location)
 {
-	m_targetLocation = location;
+        m_targetLocation = location;
+}
+
+void InstanceGlobal::SetCameraParameters(
+        const SIMD::Mat44f& viewMatrix,
+        const SIMD::Vec3f& cameraPosition,
+        const SIMD::Vec3f& cameraFront,
+        const SIMD::Vec3f& cameraRight,
+        const SIMD::Vec3f& cameraUp)
+{
+        viewMatrix_ = viewMatrix;
+        cameraPosition_ = cameraPosition;
+        cameraFront_ = cameraFront;
+        cameraRight_ = cameraRight;
+        cameraUp_ = cameraUp;
 }
 
 //----------------------------------------------------------------------------------

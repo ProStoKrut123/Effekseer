@@ -198,13 +198,15 @@ private:
 
 	static int Rand();
 
-	void ExecuteEvents();
+        void ExecuteEvents();
 
-	void ExecuteSounds();
+        void ExecuteSounds();
 
-	void StoreSortingDrawSets(const Manager::DrawParameter& drawParameter);
+        void StoreSortingDrawSets(const Manager::DrawParameter& drawParameter);
 
-	static bool CanDraw(const DrawSet& drawSet, const Manager::DrawParameter& drawParameter, const std::array<Plane, 6>& planes);
+        void ApplyCameraParametersToInstanceGlobal(DrawSet& drawSet, const Manager::DrawParameter& drawParameter);
+
+        static bool CanDraw(const DrawSet& drawSet, const Manager::DrawParameter& drawParameter, const std::array<Plane, 6>& planes);
 
 public:
 	ManagerImplemented(int instance_max, bool autoFlip);
