@@ -272,14 +272,14 @@ protected:
 		SetVertexBlendUVDistortionUV(verteies[3], instanceParameter.BlendUVDistortionUV.X + instanceParameter.BlendUVDistortionUV.Width, 0);
 		SetVertexBlendUVDistortionUV(verteies[3], instanceParameter.BlendUVDistortionUV.Y, 1);
 
-                if (VertexUV2Required<VERTEX>())
-                {
-                        StrideView<VERTEX> vs(verteies.pointerOrigin_, stride_, 4);
-                        vs[0].SetUV2(instanceParameter.PhaseUV.X, instanceParameter.PhaseUV.Y);
-                        vs[1].SetUV2(instanceParameter.PhaseUV.X, instanceParameter.PhaseUV.Y);
-                        vs[2].SetUV2(instanceParameter.PhaseUV.X, instanceParameter.PhaseUV.Y);
-                        vs[3].SetUV2(instanceParameter.PhaseUV.X, instanceParameter.PhaseUV.Y);
-                }
+		if (VertexUV2Required<VERTEX>())
+		{
+			StrideView<VERTEX> vs(verteies.pointerOrigin_, stride_, 4);
+			vs[0].SetUV2(0.0f, 1.0f);
+			vs[1].SetUV2(1.0f, 1.0f);
+			vs[2].SetUV2(0.0f, 0.0f);
+			vs[3].SetUV2(1.0f, 0.0f);
+		}
 
 		if (parameter.Billboard == ::Effekseer::BillboardType::Billboard ||
 			parameter.Billboard == ::Effekseer::BillboardType::RotatedBillboard ||

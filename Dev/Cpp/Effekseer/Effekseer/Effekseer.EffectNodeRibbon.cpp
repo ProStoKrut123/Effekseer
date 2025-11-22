@@ -175,12 +175,10 @@ void EffectNodeRibbon::BeginRenderingGroup(InstanceGroup* group, Manager* manage
 
 			m_instanceParameter.UV = groupFirst->GetUV(0, livingTime, livedTime);
 			m_instanceParameter.AlphaUV = groupFirst->GetUV(1, livingTime, livedTime);
-                        m_instanceParameter.UVDistortionUV = groupFirst->GetUV(2, livingTime, livedTime);
-                        m_instanceParameter.BlendUV = groupFirst->GetUV(3, livingTime, livedTime);
-                        m_instanceParameter.BlendAlphaUV = groupFirst->GetUV(4, livingTime, livedTime);
-                        m_instanceParameter.BlendUVDistortionUV = groupFirst->GetUV(5, livingTime, livedTime);
-
-                        m_instanceParameter.PhaseUV = groupFirst->GetPhaseUV();
+			m_instanceParameter.UVDistortionUV = groupFirst->GetUV(2, livingTime, livedTime);
+			m_instanceParameter.BlendUV = groupFirst->GetUV(3, livingTime, livedTime);
+			m_instanceParameter.BlendAlphaUV = groupFirst->GetUV(4, livingTime, livedTime);
+			m_instanceParameter.BlendUVDistortionUV = groupFirst->GetUV(5, livingTime, livedTime);
 
 			m_instanceParameter.FlipbookIndexAndNextRate = groupFirst->GetFlipbookIndexAndNextRate();
 
