@@ -8,6 +8,7 @@
 #include "Effekseer.Base.h"
 #include "Effekseer.Color.h"
 #include "Effekseer.Random.h"
+#include "Effekseer.Matrix44.h"
 #include "SIMD/Mat43f.h"
 #include "SIMD/Mat44f.h"
 #include "SIMD/Vec3f.h"
@@ -41,9 +42,15 @@ private:
 	InstanceContainer* m_rootContainer;
 	SIMD::Vec3f m_targetLocation = SIMD::Vec3f(0.0f, 0.0f, 0.0f);
 
-	RandObject m_randObjects;
-	std::array<float, 4> dynamicInputParameters;
-	std::array<uint8_t, 4> m_inputTriggerCounts;
+        RandObject m_randObjects;
+        std::array<float, 4> dynamicInputParameters;
+        std::array<uint8_t, 4> m_inputTriggerCounts;
+
+        SIMD::Mat44f viewMatrix_ = SIMD::Mat44f::Identity;
+        SIMD::Vec3f cameraPosition_ = SIMD::Vec3f(0.0f, 0.0f, 0.0f);
+        SIMD::Vec3f cameraFront_ = SIMD::Vec3f(0.0f, 0.0f, 1.0f);
+        SIMD::Vec3f cameraRight_ = SIMD::Vec3f(1.0f, 0.0f, 0.0f);
+        SIMD::Vec3f cameraUp_ = SIMD::Vec3f(0.0f, 1.0f, 0.0f);
 
 	float nextDeltaFrame_ = 0.0f;
 	int32_t layer_ = 0;
@@ -67,12 +74,14 @@ public:
 
 	void EndDeltaFrame();
 
-	bool IsSpawnDisabled = false;
-	int CurrentLevelOfDetails = 0;
+        bool IsSpawnDisabled = false;
+        int CurrentLevelOfDetails = 0;
 
-	SIMD::Mat44f EffectGlobalMatrix;
-	// Used for collision detection by kill rules
-	SIMD::Mat44f InvertedEffectGlobalMatrix;
+        SIMD::Mat44f EffectGlobalMatrix;
+        // Used for collision detection by kill rules
+        SIMD::Mat44f InvertedEffectGlobalMatrix;
+
+        Matrix44 ViewMatrix;
 
 	bool IsGlobalColorSet = false;
 	Color GlobalColor = Color(255, 255, 255, 255);
@@ -107,11 +116,43 @@ public:
 
 	void ResetUpdatedFrame();
 
-	InstanceContainer* GetRootContainer() const;
-	void SetRootContainer(InstanceContainer* container);
+        InstanceContainer* GetRootContainer() const;
+        void SetRootContainer(InstanceContainer* container);
 
-	const SIMD::Vec3f& GetTargetLocation() const;
-	void SetTargetLocation(const Vector3D& location);
+        const SIMD::Vec3f& GetTargetLocation() const;
+        void SetTargetLocation(const Vector3D& location);
+
+        void SetCameraParameters(
+                const SIMD::Mat44f& viewMatrix,
+                const SIMD::Vec3f& cameraPosition,
+                const SIMD::Vec3f& cameraFront,
+                const SIMD::Vec3f& cameraRight,
+                const SIMD::Vec3f& cameraUp);
+
+        const SIMD::Mat44f& GetCameraViewMatrix() const
+        {
+                return viewMatrix_;
+        }
+
+        const SIMD::Vec3f& GetCameraPosition() const
+        {
+                return cameraPosition_;
+        }
+
+        const SIMD::Vec3f& GetCameraFrontDirection() const
+        {
+                return cameraFront_;
+        }
+
+        const SIMD::Vec3f& GetCameraRightDirection() const
+        {
+                return cameraRight_;
+        }
+
+        const SIMD::Vec3f& GetCameraUpDirection() const
+        {
+                return cameraUp_;
+        }
 
 	void SetLayer(int32_t layer)
 	{
@@ -126,14 +167,24 @@ public:
 		return 1 << layer_;
 	}
 
-	void SetUserData(void* userData)
-	{
-		m_userData = userData;
-	}
-	void* GetUserData() const
-	{
-		return m_userData;
-	}
+        void SetUserData(void* userData)
+        {
+                m_userData = userData;
+        }
+        void* GetUserData() const
+        {
+                return m_userData;
+        }
+
+        void SetViewMatrix(const Matrix44& viewMatrix)
+        {
+                ViewMatrix = viewMatrix;
+        }
+
+        const Matrix44& GetViewMatrix() const
+        {
+                return ViewMatrix;
+        }
 };
 //----------------------------------------------------------------------------------
 //

@@ -69,13 +69,15 @@ protected:
 	InstanceCustomData customDataValues2;
 
 	SIMD::Vec3f prevPosition_;
-	SIMD::Vec3f prevGlobalPosition_;
+        SIMD::Vec3f prevGlobalPosition_;
 
-	SIMD::Vec3f parentPosition_;
-	SIMD::Vec3f steeringVec_;
+        SIMD::Vec3f parentPosition_;
+        SIMD::Vec3f steeringVec_;
+
+        SIMD::Vec2f phaseUV_ = SIMD::Vec2f(0.0f, 0.0f);
 
 public:
-	static const int32_t ChildrenMax = 16;
+        static const int32_t ChildrenMax = 16;
 
 	ManagerImplemented* m_pManager = nullptr;
 
@@ -166,11 +168,13 @@ public:
 
 	int32_t m_InstanceNumber = 0;
 
-	uint32_t m_sequenceNumber = 0;
+        uint32_t m_sequenceNumber = 0;
 
-	AlphaCuttoffState alpha_cutoff_values;
+        AlphaCuttoffState alpha_cutoff_values;
 
-	float m_AlphaThreshold = 0.0f;
+        float m_AlphaThreshold = 0.0f;
+
+        uint32_t phaseUpdateSequence_ = 0;
 
 	Instance(ManagerImplemented* pManager, EffectNodeImplemented* pEffectNode, InstanceContainer* pContainer, InstanceGroup* pGroup);
 
@@ -216,18 +220,23 @@ public:
 
 	void Update(float deltaFrame, bool shown);
 
-	void Draw(Instance* next, int32_t index, void* userData);
+        void Draw(Instance* next, int32_t index, void* userData);
 
-	void Kill();
+        void Kill();
 
-	RectF GetUV(const int32_t index) const;
+        RectF GetUV(const int32_t index) const;
 
-	RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
+        RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
 
-	SIMD::Vec2f GetAccumulatedPhaseUV() const;
+        SIMD::Vec2f GetAccumulatedPhaseUV() const;
+        SIMD::Vec2f GetPhaseUV() const
+        {
+            return phaseUV_;
+        }
 
-	//! get custom data
-	std::array<float, 4> GetCustomData(int32_t index) const;
+        //! get custom data
+        std::array<float, 4> GetCustomData(int32_t index) const;
+
 
 	//! get random object
 	RandObject& GetRandObject()
@@ -240,9 +249,11 @@ public:
 	float GetFlipbookIndexAndNextRate() const;
 
 private:
-	void UpdateTransform(float deltaFrame);
+        void UpdateTransform(float deltaFrame);
 
-	void UpdateParentMatrix(float deltaFrame);
+        void UpdateParentMatrix(float deltaFrame);
+
+        void UpdatePhaseUV(float deltaFrame);
 
 	float GetFlipbookIndexAndNextRate(const UVAnimationType& UVType, const UVParameter& UV, const InstanceUVState& data) const;
 

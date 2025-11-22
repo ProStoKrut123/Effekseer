@@ -88,28 +88,43 @@ public:
 		\~English Parameters for Manager::Draw and Manager::DrawHandle
 		\~Japanese Manager::Draw and Manager::DrawHandleに使用するパラメーター
 	*/
-	struct DrawParameter
-	{
-		Matrix44 ViewProjectionMatrix;
-		float ZNear = 0.0f;
-		float ZFar = 0.0f;
+        struct DrawParameter
+        {
+                Matrix44 ViewProjectionMatrix;
+                Matrix44 ViewMatrix;
+                float ZNear = 0.0f;
+                float ZFar = 0.0f;
 
-		Vector3D CameraPosition;
+                Vector3D CameraPosition;
 
-		/**
-			@brief
-			\~English A direction of camera
-			\~Japanese カメラの方向
-			@note
-			\~English It means that the direction is normalize(focus - position)
-			\~Japanese normalize(focus-position)を意味する。
-		*/
-		Vector3D CameraFrontDirection;
+                /**
+                        @brief
+                        \~English A direction of camera
+                        \~Japanese カメラの方向
+                        @note
+                        \~English It means that the direction is normalize(focus - position)
+                        \~Japanese normalize(focus-position)を意味する。
+                */
+                Vector3D CameraFrontDirection;
 
-		/**
-			@brief
-			\~English A bitmask to show effects
-			\~Japanese エフェクトを表示するためのビットマスク
+                /**
+                        @brief
+                        \~English A right direction of camera
+                        \~Japanese カメラの右方向
+                */
+                Vector3D CameraRightDirection;
+
+                /**
+                        @brief
+                        \~English An up direction of camera
+                        \~Japanese カメラの上方向
+                */
+                Vector3D CameraUpDirection;
+
+                /**
+                        @brief
+                        \~English A bitmask to show effects
+                        \~Japanese エフェクトを表示するためのビットマスク
 			@note
 			\~English For example, if effect's layer is 1 and CameraCullingMask's first bit is 1, this effect is shown.
 			\~Japanese 例えば、エフェクトのレイヤーが0でカリングマスクの最初のビットが1のときエフェクトは表示される。
