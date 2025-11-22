@@ -28,12 +28,14 @@ void InstanceGlobal::operator delete(void* p)
 }
 
 InstanceGlobal::InstanceGlobal()
-	: m_instanceCount(0)
-	, m_updatedFrame(0)
-	, m_rootContainer(nullptr)
+        : m_instanceCount(0)
+        , m_updatedFrame(0)
+        , m_rootContainer(nullptr)
 {
-	dynamicInputParameters.fill(0);
-	m_inputTriggerCounts.fill(0);
+        dynamicInputParameters.fill(0);
+        m_inputTriggerCounts.fill(0);
+
+        ViewMatrix.Indentity();
 }
 
 //----------------------------------------------------------------------------------
