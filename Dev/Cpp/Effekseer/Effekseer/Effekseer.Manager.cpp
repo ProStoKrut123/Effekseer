@@ -63,8 +63,11 @@ void Log(LogType logType, const std::string& message)
 
 Manager::DrawParameter::DrawParameter()
 {
-        CameraCullingMask = 1;
         ViewMatrix.Indentity();
+        CameraFrontDirection = Vector3D(0.0f, 0.0f, 1.0f);
+        CameraRightDirection = Vector3D(1.0f, 0.0f, 0.0f);
+        CameraUpDirection = Vector3D(0.0f, 1.0f, 0.0f);
+        CameraCullingMask = 1;
 }
 
 ManagerRef Manager::Create(int instance_max, bool autoFlip)
@@ -366,7 +369,7 @@ void ManagerImplemented::ExecuteEvents()
 
 void ManagerImplemented::StoreSortingDrawSets(const Manager::DrawParameter& drawParameter)
 {
-	sortedRenderingDrawSets_.clear();
+        sortedRenderingDrawSets_.clear();
 
 	for (const auto& ds : m_renderingDrawSets)
 	{
@@ -379,13 +382,53 @@ void ManagerImplemented::StoreSortingDrawSets(const Manager::DrawParameter& draw
 			const auto da = SIMD::Vec3f::Dot(a.GetGlobalMatrix().GetTranslation() - drawParameter.CameraPosition, drawParameter.CameraFrontDirection);
 			const auto db = SIMD::Vec3f::Dot(b.GetGlobalMatrix().GetTranslation() - drawParameter.CameraPosition, drawParameter.CameraFrontDirection);
 			return da > db; });
-	}
+        }
+}
+
+void ManagerImplemented::ApplyCameraParametersToInstanceGlobal(DrawSet& drawSet, const Manager::DrawParameter& drawParameter)
+{
+        const auto normalizeOrFallback = [](const SIMD::Vec3f& value, const SIMD::Vec3f& fallback, const SIMD::Vec3f& defaultAxis) {
+                if (!value.IsZero())
+                {
+                        return value.Normalize();
+                }
+
+                if (!fallback.IsZero())
+                {
+                        return fallback.Normalize();
+                }
+
+                return defaultAxis;
+        };
+
+        const auto axisFromView = [](const Matrix44& matrix, int column) {
+                return SIMD::Vec3f(matrix.Values[0][column], matrix.Values[1][column], matrix.Values[2][column]);
+        };
+
+        const auto viewMatrix = SIMD::Mat44f(drawParameter.ViewMatrix);
+        const auto viewRight = axisFromView(drawParameter.ViewMatrix, 0);
+        const auto viewUp = axisFromView(drawParameter.ViewMatrix, 1);
+        const auto viewFront = axisFromView(drawParameter.ViewMatrix, 2);
+
+        const auto cameraFront = normalizeOrFallback(SIMD::Vec3f(drawParameter.CameraFrontDirection), viewFront, SIMD::Vec3f(0.0f, 0.0f, 1.0f));
+        const auto cameraRight = normalizeOrFallback(SIMD::Vec3f(drawParameter.CameraRightDirection), viewRight, SIMD::Vec3f(1.0f, 0.0f, 0.0f));
+        const auto cameraUp = normalizeOrFallback(SIMD::Vec3f(drawParameter.CameraUpDirection), viewUp, SIMD::Vec3f(0.0f, 1.0f, 0.0f));
+
+        if (drawSet.GlobalPointer != nullptr)
+        {
+                drawSet.GlobalPointer->SetCameraParameters(
+                        viewMatrix,
+                        SIMD::Vec3f(drawParameter.CameraPosition),
+                        cameraFront,
+                        cameraRight,
+                        cameraUp);
+        }
 }
 
 bool ManagerImplemented::CanDraw(const DrawSet& drawSet, const Manager::DrawParameter& drawParameter, const std::array<Plane, 6>& planes)
 {
-	if (drawSet.InstanceContainerPointer == nullptr ||
-		!drawSet.IsShown)
+        if (drawSet.InstanceContainerPointer == nullptr ||
+                !drawSet.IsShown)
 	{
 		return false;
 	}
@@ -1753,6 +1796,7 @@ void ManagerImplemented::Draw(const Manager::DrawParameter& drawParameter)
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
@@ -1809,7 +1853,9 @@ void ManagerImplemented::DrawBack(const Manager::DrawParameter& drawParameter)
         const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+          
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
@@ -1860,7 +1906,10 @@ void ManagerImplemented::DrawFront(const Manager::DrawParameter& drawParameter)
         const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+          
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
+
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
@@ -1986,6 +2035,7 @@ void ManagerImplemented::DrawHandle(Handle handle, const Manager::DrawParameter&
                 DrawSet& drawSet = it->second;
 
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
@@ -2028,10 +2078,12 @@ void ManagerImplemented::DrawHandleBack(Handle handle, const Manager::DrawParame
 
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
 
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		for (int32_t i = 0; i < e->renderingNodesThreshold; i++)
 		{
@@ -2061,6 +2113,7 @@ void ManagerImplemented::DrawHandleFront(Handle handle, const Manager::DrawParam
                 auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
 
                 drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+                ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
