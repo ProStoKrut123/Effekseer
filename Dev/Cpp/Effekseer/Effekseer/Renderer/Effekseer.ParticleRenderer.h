@@ -37,10 +37,11 @@ public:
 
 	struct InstanceParameter
 	{
-		SIMD::Vec3f Position;
-		float Size;
-		Color ParticleColor;
-	};
+                SIMD::Vec3f Position;
+                float Size;
+                Color ParticleColor;
+                Vector2D PhaseUV;
+        };
 
 public:
 	ParticleRenderer()

@@ -10,6 +10,7 @@
 #include "Effekseer.ManagerImplemented.h"
 #include "Effekseer.Setting.h"
 #include "Model/Model.h"
+#include <cmath>
 
 namespace Effekseer
 {
@@ -421,13 +422,28 @@ void Instance::Update(float deltaFrame, bool shown)
 		}
 	}
 
-	// step time
-	// frame 0 - generated time
-	// frame 1- now
-	if (is_time_step_allowed)
-	{
-		m_LivingTime += deltaFrame;
-	}
+        // step time
+        // frame 0 - generated time
+        // frame 1- now
+        if (is_time_step_allowed)
+        {
+                m_LivingTime += deltaFrame;
+
+                const auto deltaPhase = SIMD::Vec2f(deltaFrame, deltaFrame);
+                phaseUV_ += deltaPhase;
+
+                auto wrapPhase = [](float value) {
+                        value = std::fmod(value, 1.0f);
+                        if (value < 0.0f)
+                        {
+                                value += 1.0f;
+                        }
+                        return value;
+                };
+
+                phaseUV_.SetX(wrapPhase(phaseUV_.GetX()));
+                phaseUV_.SetY(wrapPhase(phaseUV_.GetY()));
+        }
 
 	UpdateTransform(deltaFrame);
 
@@ -884,11 +900,16 @@ RectF Instance::GetUV(const int32_t index) const
 
 RectF Instance::GetUV(const int32_t index, float livingTime, float livedTime) const
 {
-	return UVFunctions::GetUV(
-		uvAnimationData_[index],
-		m_pEffectNode->RendererCommon.UVs[index],
-		livingTime,
-		livedTime);
+        return UVFunctions::GetUV(
+                uvAnimationData_[index],
+                m_pEffectNode->RendererCommon.UVs[index],
+                livingTime,
+                livedTime);
+}
+
+Vector2D Instance::GetPhaseUV() const
+{
+        return Vector2D(phaseUV_.GetX(), phaseUV_.GetY());
 }
 
 std::array<float, 4> Instance::GetCustomData(int32_t index) const

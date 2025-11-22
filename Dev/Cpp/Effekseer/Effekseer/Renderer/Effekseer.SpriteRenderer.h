@@ -71,11 +71,12 @@ public:
 
 		float AlphaThreshold;
 
-		float ViewOffsetDistance;
+                float ViewOffsetDistance;
 
-		std::array<float, 4> CustomData1;
-		std::array<float, 4> CustomData2;
-	};
+                std::array<float, 4> CustomData1;
+                std::array<float, 4> CustomData2;
+                Vector2D PhaseUV;
+        };
 
 public:
 	SpriteRenderer()

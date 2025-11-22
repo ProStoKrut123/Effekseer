@@ -217,17 +217,19 @@ void EffectNodeSprite::Rendering(const Instance& instance, const Instance* next_
 		instanceParameter.AlphaUV = instance.GetUV(1);
 		instanceParameter.UVDistortionUV = instance.GetUV(2);
 		instanceParameter.BlendUV = instance.GetUV(3);
-		instanceParameter.BlendAlphaUV = instance.GetUV(4);
-		instanceParameter.BlendUVDistortionUV = instance.GetUV(5);
+                instanceParameter.BlendAlphaUV = instance.GetUV(4);
+                instanceParameter.BlendUVDistortionUV = instance.GetUV(5);
 
-		instanceParameter.FlipbookIndexAndNextRate = instance.GetFlipbookIndexAndNextRate();
+                instanceParameter.FlipbookIndexAndNextRate = instance.GetFlipbookIndexAndNextRate();
 
-		instanceParameter.AlphaThreshold = instance.m_AlphaThreshold;
+                instanceParameter.AlphaThreshold = instance.m_AlphaThreshold;
 
-		if (nodeParam_.EnableViewOffset)
-		{
-			instanceParameter.ViewOffsetDistance = instance.translation_values.view_offset.distance;
-		}
+                instanceParameter.PhaseUV = instance.GetPhaseUV();
+
+                if (nodeParam_.EnableViewOffset)
+                {
+                        instanceParameter.ViewOffsetDistance = instance.translation_values.view_offset.distance;
+                }
 
 		CalcCustomData(&instance, instanceParameter.CustomData1, instanceParameter.CustomData2);
 

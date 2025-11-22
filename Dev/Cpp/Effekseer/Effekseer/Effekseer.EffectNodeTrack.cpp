@@ -142,14 +142,16 @@ void EffectNodeTrack::BeginRenderingGroup(InstanceGroup* group, Manager* manager
 			m_instanceParameter.BlendAlphaUV = groupFirst->GetUV(4, livingTime, livedTime);
 			m_instanceParameter.BlendUVDistortionUV = groupFirst->GetUV(5, livingTime, livedTime);
 
-			m_instanceParameter.FlipbookIndexAndNextRate = groupFirst->GetFlipbookIndexAndNextRate();
+                        m_instanceParameter.FlipbookIndexAndNextRate = groupFirst->GetFlipbookIndexAndNextRate();
 
-			m_instanceParameter.AlphaThreshold = groupFirst->m_AlphaThreshold;
+                        m_instanceParameter.AlphaThreshold = groupFirst->m_AlphaThreshold;
 
-			if (m_nodeParameter.EnableViewOffset)
-			{
-				m_instanceParameter.ViewOffsetDistance = groupFirst->translation_values.view_offset.distance;
-			}
+                        m_instanceParameter.PhaseUV = groupFirst->GetPhaseUV();
+
+                        if (m_nodeParameter.EnableViewOffset)
+                        {
+                                m_instanceParameter.ViewOffsetDistance = groupFirst->translation_values.view_offset.distance;
+                        }
 
 			CalcCustomData(group->GetFirst(), m_instanceParameter.CustomData1, m_instanceParameter.CustomData2);
 		}
