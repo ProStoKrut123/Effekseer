@@ -306,14 +306,16 @@ void EffectNodeRing::Rendering(const Instance& instance, const Instance* next_in
 		instanceParameter.BlendAlphaUV = instance.GetUV(4);
 		instanceParameter.BlendUVDistortionUV = instance.GetUV(5);
 
-		instanceParameter.FlipbookIndexAndNextRate = instance.GetFlipbookIndexAndNextRate();
+                instanceParameter.FlipbookIndexAndNextRate = instance.GetFlipbookIndexAndNextRate();
 
-		instanceParameter.AlphaThreshold = instance.m_AlphaThreshold;
+                instanceParameter.AlphaThreshold = instance.m_AlphaThreshold;
 
-		if (instance.m_pEffectNode->TranslationParam.TranslationType == ParameterTranslationType_ViewOffset)
-		{
-			instanceParameter.ViewOffsetDistance = instance.translation_values.view_offset.distance;
-		}
+                instanceParameter.PhaseUV = instance.GetPhaseUV();
+
+                if (instance.m_pEffectNode->TranslationParam.TranslationType == ParameterTranslationType_ViewOffset)
+                {
+                        instanceParameter.ViewOffsetDistance = instance.translation_values.view_offset.distance;
+                }
 
 		CalcCustomData(&instance, instanceParameter.CustomData1, instanceParameter.CustomData2);
 

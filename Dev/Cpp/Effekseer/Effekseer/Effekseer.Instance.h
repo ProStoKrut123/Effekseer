@@ -16,6 +16,7 @@
 #include "Effekseer.Matrix43.h"
 #include "Effekseer.Random.h"
 #include "Effekseer.RectF.h"
+#include "Effekseer.Vector2D.h"
 
 #include "Effekseer.EffectNodeModel.h"
 #include "Effekseer.EffectNodeRibbon.h"
@@ -162,11 +163,13 @@ public:
 	bool m_ParentMatrix43Calculated = false;
 
 	//! whether a time is allowed to pass
-	bool is_time_step_allowed = false;
+        bool is_time_step_allowed = false;
 
-	int32_t m_InstanceNumber = 0;
+        int32_t m_InstanceNumber = 0;
 
-	uint32_t m_sequenceNumber = 0;
+        uint32_t m_sequenceNumber = 0;
+
+        SIMD::Vec2f phaseUV_ = SIMD::Vec2f(0.0f, 0.0f);
 
 	AlphaCuttoffState alpha_cutoff_values;
 
@@ -220,9 +223,11 @@ public:
 
 	void Kill();
 
-	RectF GetUV(const int32_t index) const;
+        RectF GetUV(const int32_t index) const;
 
-	RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
+        RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
+
+        Vector2D GetPhaseUV() const;
 
 	//! get custom data
 	std::array<float, 4> GetCustomData(int32_t index) const;
