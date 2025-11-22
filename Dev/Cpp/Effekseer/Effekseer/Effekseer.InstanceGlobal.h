@@ -8,6 +8,7 @@
 #include "Effekseer.Base.h"
 #include "Effekseer.Color.h"
 #include "Effekseer.Random.h"
+#include "Effekseer.Matrix44.h"
 #include "SIMD/Mat43f.h"
 #include "SIMD/Mat44f.h"
 #include "SIMD/Vec3f.h"
@@ -73,12 +74,14 @@ public:
 
 	void EndDeltaFrame();
 
-	bool IsSpawnDisabled = false;
-	int CurrentLevelOfDetails = 0;
+        bool IsSpawnDisabled = false;
+        int CurrentLevelOfDetails = 0;
 
-	SIMD::Mat44f EffectGlobalMatrix;
-	// Used for collision detection by kill rules
-	SIMD::Mat44f InvertedEffectGlobalMatrix;
+        SIMD::Mat44f EffectGlobalMatrix;
+        // Used for collision detection by kill rules
+        SIMD::Mat44f InvertedEffectGlobalMatrix;
+
+        Matrix44 ViewMatrix;
 
 	bool IsGlobalColorSet = false;
 	Color GlobalColor = Color(255, 255, 255, 255);
@@ -164,14 +167,24 @@ public:
 		return 1 << layer_;
 	}
 
-	void SetUserData(void* userData)
-	{
-		m_userData = userData;
-	}
-	void* GetUserData() const
-	{
-		return m_userData;
-	}
+        void SetUserData(void* userData)
+        {
+                m_userData = userData;
+        }
+        void* GetUserData() const
+        {
+                return m_userData;
+        }
+
+        void SetViewMatrix(const Matrix44& viewMatrix)
+        {
+                ViewMatrix = viewMatrix;
+        }
+
+        const Matrix44& GetViewMatrix() const
+        {
+                return ViewMatrix;
+        }
 };
 //----------------------------------------------------------------------------------
 //

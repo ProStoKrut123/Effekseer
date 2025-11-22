@@ -90,8 +90,8 @@ public:
 	*/
         struct DrawParameter
         {
-                Matrix44 ViewMatrix;
                 Matrix44 ViewProjectionMatrix;
+                Matrix44 ViewMatrix;
                 float ZNear = 0.0f;
                 float ZFar = 0.0f;
 

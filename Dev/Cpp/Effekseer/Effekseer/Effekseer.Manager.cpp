@@ -1795,6 +1795,7 @@ void ManagerImplemented::Draw(const Manager::DrawParameter& drawParameter)
         const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
@@ -1852,6 +1853,8 @@ void ManagerImplemented::DrawBack(const Manager::DrawParameter& drawParameter)
         const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+          
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
@@ -1903,7 +1906,10 @@ void ManagerImplemented::DrawFront(const Manager::DrawParameter& drawParameter)
         const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
         const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+          
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
+
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
                 {
@@ -2028,6 +2034,7 @@ void ManagerImplemented::DrawHandle(Handle handle, const Manager::DrawParameter&
         {
                 DrawSet& drawSet = it->second;
 
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
@@ -2069,6 +2076,8 @@ void ManagerImplemented::DrawHandleBack(Handle handle, const Manager::DrawParame
                 DrawSet& drawSet = it->second;
                 auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
 
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
@@ -2103,6 +2112,7 @@ void ManagerImplemented::DrawHandleFront(Handle handle, const Manager::DrawParam
                 DrawSet& drawSet = it->second;
                 auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
 
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
                 ApplyCameraParametersToInstanceGlobal(drawSet, drawParameter);
 
                 if (!CanDraw(drawSet, drawParameter, cullingPlanes))
@@ -2131,10 +2141,12 @@ bool ManagerImplemented::GetIsCulled(Handle handle, const Manager::DrawParameter
 {
 	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
-	if (m_DrawSets.count(handle) > 0)
-	{
-		return !CanDraw(m_DrawSets[handle], drawParameter, cullingPlanes);
-	}
+        if (m_DrawSets.count(handle) > 0)
+        {
+                m_DrawSets[handle].GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                return !CanDraw(m_DrawSets[handle], drawParameter, cullingPlanes);
+        }
 
 	return true;
 }
