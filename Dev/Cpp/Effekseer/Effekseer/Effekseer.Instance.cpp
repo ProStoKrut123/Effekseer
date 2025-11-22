@@ -931,10 +931,16 @@ RectF Instance::GetUV(const int32_t index) const
 RectF Instance::GetUV(const int32_t index, float livingTime, float livedTime) const
 {
 	return UVFunctions::GetUV(
-		uvAnimationData_[index],
-		m_pEffectNode->RendererCommon.UVs[index],
-		livingTime,
-		livedTime);
+			uvAnimationData_[index],
+			m_pEffectNode->RendererCommon.UVs[index],
+			livingTime,
+			livedTime);
+}
+
+SIMD::Vec2f Instance::GetAccumulatedPhaseUV() const
+{
+	const auto uv = GetUV(0);
+	return SIMD::Vec2f(uv.X, uv.Y);
 }
 
 std::array<float, 4> Instance::GetCustomData(int32_t index) const

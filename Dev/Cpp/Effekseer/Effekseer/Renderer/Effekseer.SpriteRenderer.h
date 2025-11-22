@@ -50,6 +50,8 @@ public:
 		SIMD::Mat43f SRTMatrix43;
 		Color AllColor;
 
+		SIMD::Vec2f PhaseUV;
+
 		// Lower left, Lower right, Upper left, Upper right
 		Color Colors[4];
 
