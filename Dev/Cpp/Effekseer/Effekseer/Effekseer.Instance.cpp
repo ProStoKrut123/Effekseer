@@ -1,4 +1,5 @@
 ﻿#include "Effekseer.Instance.h"
+#include <cmath>
 #include "Effekseer.Curve.h"
 #include "Effekseer.Effect.h"
 #include "Effekseer.EffectImplemented.h"
@@ -154,7 +155,48 @@ void Instance::UpdateChildrenGroupMatrix()
 
 InstanceGlobal* Instance::GetInstanceGlobal()
 {
-	return m_pContainer->GetRootInstance();
+        return m_pContainer->GetRootInstance();
+}
+
+void Instance::UpdatePhaseUV(float deltaFrame)
+{
+        const auto sequence = ((ManagerImplemented*)m_pManager)->GetSequenceNumber();
+
+        if (phaseUpdateSequence_ == sequence)
+        {
+                return;
+        }
+
+        phaseUpdateSequence_ = sequence;
+
+        auto instanceGlobal = GetInstanceGlobal();
+
+        if (instanceGlobal == nullptr || deltaFrame == 0.0f)
+        {
+                return;
+        }
+
+        const auto& viewMatrix = instanceGlobal->GetViewMatrix();
+
+        SIMD::Vec2f scroll(viewMatrix.Values[0][2], viewMatrix.Values[1][2]);
+        constexpr float baseSpeed = 1.0f;
+        scroll *= baseSpeed * deltaFrame;
+
+        phaseUV_ += scroll;
+
+        auto wrap01 = [](float value) -> float {
+                float wrapped = std::fmod(value, 1.0f);
+
+                if (wrapped < 0.0f)
+                {
+                        wrapped += 1.0f;
+                }
+
+                return wrapped;
+        };
+
+        phaseUV_.SetX(wrap01(phaseUV_.GetX()));
+        phaseUV_.SetY(wrap01(phaseUV_.GetY()));
 }
 
 eInstanceState Instance::GetState() const
@@ -229,7 +271,9 @@ void Instance::Initialize(Instance* parent, float spawnDeltaFrame, int32_t insta
 	// Set random seed from InstanceGlobal's randomizer
 	m_randObject.SetSeed(instanceGlobal->GetRandObject().GetRandInt());
 
-	prevPosition_ = SIMD::Vec3f(0, 0, 0);
+        prevPosition_ = SIMD::Vec3f(0, 0, 0);
+        phaseUV_ = SIMD::Vec2f(0.0f, 0.0f);
+        phaseUpdateSequence_ = 0;
 }
 
 void Instance::FirstUpdate()
@@ -390,18 +434,20 @@ void Instance::Update(float deltaFrame, bool shown)
 
 	const auto isParentRemoving = m_pParent != nullptr && !m_pParent->IsActive();
 
-	bool isParentSequenceChanged = false;
-	if (m_pParent != nullptr)
-	{
-		isParentSequenceChanged = m_pParent->m_sequenceNumber >= m_sequenceNumber;
-	}
+        bool isParentSequenceChanged = false;
+        if (m_pParent != nullptr)
+        {
+                isParentSequenceChanged = m_pParent->m_sequenceNumber >= m_sequenceNumber;
+        }
 
-	const bool isUpdateRequired = deltaFrame != 0.0f || m_pEffectNode->RotationParam.RotationType == ParameterRotationType::ParameterRotationType_RotateToViewpoint;
+        const bool isUpdateRequired = deltaFrame != 0.0f || m_pEffectNode->RotationParam.RotationType == ParameterRotationType::ParameterRotationType_RotateToViewpoint;
 
-	if (m_GlobalMatrix43Calculated && (m_ParentMatrix43Calculated || m_pParent == nullptr) && !isUpdateRequired && !isParentRemoving && !isParentSequenceChanged)
-	{
-		return;
-	}
+        UpdatePhaseUV(deltaFrame);
+
+        if (m_GlobalMatrix43Calculated && (m_ParentMatrix43Calculated || m_pParent == nullptr) && !isUpdateRequired && !isParentRemoving && !isParentSequenceChanged)
+        {
+                return;
+        }
 
 	// Invalidate matrix
 	m_GlobalMatrix43Calculated = false;

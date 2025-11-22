@@ -88,13 +88,14 @@ public:
 		\~English Parameters for Manager::Draw and Manager::DrawHandle
 		\~Japanese Manager::Draw and Manager::DrawHandleに使用するパラメーター
 	*/
-	struct DrawParameter
-	{
-		Matrix44 ViewProjectionMatrix;
-		float ZNear = 0.0f;
-		float ZFar = 0.0f;
+        struct DrawParameter
+        {
+                Matrix44 ViewProjectionMatrix;
+                Matrix44 ViewMatrix;
+                float ZNear = 0.0f;
+                float ZFar = 0.0f;
 
-		Vector3D CameraPosition;
+                Vector3D CameraPosition;
 
 		/**
 			@brief

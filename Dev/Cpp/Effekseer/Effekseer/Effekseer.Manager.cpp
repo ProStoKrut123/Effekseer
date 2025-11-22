@@ -63,7 +63,8 @@ void Log(LogType logType, const std::string& message)
 
 Manager::DrawParameter::DrawParameter()
 {
-	CameraCullingMask = 1;
+        CameraCullingMask = 1;
+        ViewMatrix.Indentity();
 }
 
 ManagerRef Manager::Create(int instance_max, bool autoFlip)
@@ -1748,13 +1749,15 @@ void ManagerImplemented::Draw(const Manager::DrawParameter& drawParameter)
 	// start to record a time
 	int64_t beginTime = ::Effekseer::GetTime();
 
-	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
+        const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
-	const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+        const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		if (drawSet.IsAutoDrawing)
 		{
@@ -1803,13 +1806,15 @@ void ManagerImplemented::DrawBack(const Manager::DrawParameter& drawParameter)
 	// start to record a time
 	int64_t beginTime = ::Effekseer::GetTime();
 
-	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
+        const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
-	const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+        const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		if (drawSet.IsAutoDrawing)
 		{
@@ -1852,13 +1857,15 @@ void ManagerImplemented::DrawFront(const Manager::DrawParameter& drawParameter)
 	// start to record a time
 	int64_t beginTime = ::Effekseer::GetTime();
 
-	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
+        const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
-	const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+        const auto render = [this, &drawParameter, &cullingPlanes](DrawSet& drawSet) -> void {
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		if (drawSet.IsAutoDrawing)
 		{
@@ -1974,14 +1981,16 @@ void ManagerImplemented::DrawHandle(Handle handle, const Manager::DrawParameter&
 	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
 	auto it = m_renderingDrawSetMaps.find(handle);
-	if (it != m_renderingDrawSetMaps.end())
-	{
-		DrawSet& drawSet = it->second;
+        if (it != m_renderingDrawSetMaps.end())
+        {
+                DrawSet& drawSet = it->second;
 
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		if (drawSet.GlobalPointer->RenderedInstanceContainers.size() > 0)
 		{
@@ -2012,10 +2021,12 @@ void ManagerImplemented::DrawHandleBack(Handle handle, const Manager::DrawParame
 	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
 	std::map<Handle, DrawSet>::iterator it = m_renderingDrawSetMaps.find(handle);
-	if (it != m_renderingDrawSetMaps.end())
-	{
-		DrawSet& drawSet = it->second;
-		auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
+        if (it != m_renderingDrawSetMaps.end())
+        {
+                DrawSet& drawSet = it->second;
+                auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
+
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
 
 		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
 		{
@@ -2044,15 +2055,17 @@ void ManagerImplemented::DrawHandleFront(Handle handle, const Manager::DrawParam
 	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
 	std::map<Handle, DrawSet>::iterator it = m_renderingDrawSetMaps.find(handle);
-	if (it != m_renderingDrawSetMaps.end())
-	{
-		DrawSet& drawSet = it->second;
-		auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
+        if (it != m_renderingDrawSetMaps.end())
+        {
+                DrawSet& drawSet = it->second;
+                auto e = (EffectImplemented*)drawSet.ParameterPointer.Get();
 
-		if (!CanDraw(drawSet, drawParameter, cullingPlanes))
-		{
-			return;
-		}
+                drawSet.GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                if (!CanDraw(drawSet, drawParameter, cullingPlanes))
+                {
+                        return;
+                }
 
 		if (drawSet.GlobalPointer->RenderedInstanceContainers.size() > 0)
 		{
@@ -2075,10 +2088,12 @@ bool ManagerImplemented::GetIsCulled(Handle handle, const Manager::DrawParameter
 {
 	const auto cullingPlanes = GeometryUtility::CalculateFrustumPlanes(drawParameter.ViewProjectionMatrix, drawParameter.ZNear, drawParameter.ZFar, GetSetting()->GetCoordinateSystem());
 
-	if (m_DrawSets.count(handle) > 0)
-	{
-		return !CanDraw(m_DrawSets[handle], drawParameter, cullingPlanes);
-	}
+        if (m_DrawSets.count(handle) > 0)
+        {
+                m_DrawSets[handle].GlobalPointer->SetViewMatrix(drawParameter.ViewMatrix);
+
+                return !CanDraw(m_DrawSets[handle], drawParameter, cullingPlanes);
+        }
 
 	return true;
 }
