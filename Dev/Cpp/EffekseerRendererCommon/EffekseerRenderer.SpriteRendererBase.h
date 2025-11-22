@@ -275,10 +275,10 @@ protected:
 		if (VertexUV2Required<VERTEX>())
 		{
 			StrideView<VERTEX> vs(verteies.pointerOrigin_, stride_, 4);
-			vs[0].SetUV2(0.0f, 1.0f);
-			vs[1].SetUV2(1.0f, 1.0f);
-			vs[2].SetUV2(0.0f, 0.0f);
-			vs[3].SetUV2(1.0f, 0.0f);
+			for (int32_t i = 0; i < 4; i++)
+			{
+				vs[i].SetUV2(instanceParameter.PhaseUV.GetX(), instanceParameter.PhaseUV.GetY());
+			}
 		}
 
 		if (parameter.Billboard == ::Effekseer::BillboardType::Billboard ||

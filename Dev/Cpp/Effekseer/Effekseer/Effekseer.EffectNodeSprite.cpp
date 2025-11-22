@@ -229,6 +229,9 @@ void EffectNodeSprite::Rendering(const Instance& instance, const Instance* next_
 			instanceParameter.ViewOffsetDistance = instance.translation_values.view_offset.distance;
 		}
 
+		auto phaseUV = instance.GetAccumulatedPhaseUV();
+		instanceParameter.PhaseUV = SIMD::Vec2f(phaseUV.GetX(), phaseUV.GetY());
+
 		CalcCustomData(&instance, instanceParameter.CustomData1, instanceParameter.CustomData2);
 
 		renderer->Rendering(nodeParam_, instanceParameter, userData);

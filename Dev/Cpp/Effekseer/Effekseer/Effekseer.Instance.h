@@ -224,6 +224,8 @@ public:
 
 	RectF GetUV(const int32_t index, float livingTime, float livedTime) const;
 
+	SIMD::Vec2f GetAccumulatedPhaseUV() const;
+
 	//! get custom data
 	std::array<float, 4> GetCustomData(int32_t index) const;
 
