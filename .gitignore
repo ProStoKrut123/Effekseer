@@ -57,3 +57,9 @@ Dev/release/resources/icons/Copy.png
 Dev/release/resources/icons/Paste.png
 
 Tool/fbxsdk
+
+build/
+Dev/release/
+__pycache__/
+*.dll
+*.exe
