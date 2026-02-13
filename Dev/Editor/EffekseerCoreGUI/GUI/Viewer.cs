@@ -320,9 +320,10 @@ namespace Effekseer.GUI
 
 			if (Core.Option.RenderingMode != OptionValues.RenderMode.Overdraw)
 			{
-				RenderGrid(cameraMatrix,projectionMatrix);
+				RenderGrid(cameraMatrix, projectionMatrix);
 				RenderKillRulesPreview(cameraMatrix, projectionMatrix);
 				RenderCullingPreview(cameraMatrix, projectionMatrix);
+				RenderMoveGizmo(cameraMatrix, projectionMatrix);
 			}
 		}
 
@@ -543,6 +544,111 @@ namespace Effekseer.GUI
 					sphereCenter.X, sphereCenter.Y, sphereCenter.Z,
 					radius, sphereColor);
 			}
+		}
+
+		private void RenderMoveGizmo(Matrix44F cameraMatrix, Matrix44F projectionMatrix)
+		{
+			if (Manager.effectViewer == null)
+			{
+				return;
+			}
+
+			Dock.EffectViwerPaneBase.MoveGizmoRenderInfo gizmoInfo;
+			if (!Manager.effectViewer.TryGetMoveGizmoRenderInfo(out gizmoInfo))
+			{
+				return;
+			}
+
+			var highlightedAxis = gizmoInfo.ActiveAxis != Dock.EffectViwerPaneBase.MoveGizmoAxis.None
+				? gizmoInfo.ActiveAxis
+				: gizmoInfo.HoveredAxis;
+
+			Color GetAxisColor(Dock.EffectViwerPaneBase.MoveGizmoAxis axis)
+			{
+				if (highlightedAxis == axis)
+				{
+					return new Color(0xFF, 0xF0, 0x60, 0xFF);
+				}
+
+				if (axis == Dock.EffectViwerPaneBase.MoveGizmoAxis.X)
+				{
+					return new Color(0xFF, 0x60, 0x60, 0xFF);
+				}
+
+				if (axis == Dock.EffectViwerPaneBase.MoveGizmoAxis.Y)
+				{
+					return new Color(0x60, 0xFF, 0x60, 0xFF);
+				}
+
+				return new Color(0x60, 0x80, 0xFF, 0xFF);
+			}
+
+			void AddArrow(float axisX, float axisY, float axisZ, Color axisColor)
+			{
+				var sx = gizmoInfo.CenterX;
+				var sy = gizmoInfo.CenterY;
+				var sz = gizmoInfo.CenterZ;
+
+				var length = gizmoInfo.AxisLength;
+				var ex = sx + axisX * length;
+				var ey = sy + axisY * length;
+				var ez = sz + axisZ * length;
+
+				EffectRenderer.AddLine(sx, sy, sz, ex, ey, ez, axisColor);
+
+				var headLength = length * 0.2f;
+				var headWidth = length * 0.08f;
+
+				float sideAX = 0.0f, sideAY = 0.0f, sideAZ = 0.0f;
+				float sideBX = 0.0f, sideBY = 0.0f, sideBZ = 0.0f;
+
+				if (axisX != 0.0f)
+				{
+					sideAX = 0.0f; sideAY = 1.0f; sideAZ = 0.0f;
+					sideBX = 0.0f; sideBY = 0.0f; sideBZ = 1.0f;
+				}
+				else if (axisY != 0.0f)
+				{
+					sideAX = 1.0f; sideAY = 0.0f; sideAZ = 0.0f;
+					sideBX = 0.0f; sideBY = 0.0f; sideBZ = 1.0f;
+				}
+				else
+				{
+					sideAX = 1.0f; sideAY = 0.0f; sideAZ = 0.0f;
+					sideBX = 0.0f; sideBY = 1.0f; sideBZ = 0.0f;
+				}
+
+				void AddHead(float sign, float sx_, float sy_, float sz_)
+				{
+					var hx = ex - axisX * headLength + sx_ * headWidth * sign;
+					var hy = ey - axisY * headLength + sy_ * headWidth * sign;
+					var hz = ez - axisZ * headLength + sz_ * headWidth * sign;
+					EffectRenderer.AddLine(ex, ey, ez, hx, hy, hz, axisColor);
+				}
+
+				AddHead(1.0f, sideAX, sideAY, sideAZ);
+				AddHead(-1.0f, sideAX, sideAY, sideAZ);
+				AddHead(1.0f, sideBX, sideBY, sideBZ);
+				AddHead(-1.0f, sideBX, sideBY, sideBZ);
+			}
+
+			EffectRenderer.StartRenderingLines();
+
+			AddArrow(1.0f, 0.0f, 0.0f, GetAxisColor(Dock.EffectViwerPaneBase.MoveGizmoAxis.X));
+			AddArrow(0.0f, 1.0f, 0.0f, GetAxisColor(Dock.EffectViwerPaneBase.MoveGizmoAxis.Y));
+			AddArrow(0.0f, 0.0f, 1.0f, GetAxisColor(Dock.EffectViwerPaneBase.MoveGizmoAxis.Z));
+
+			var centerSize = gizmoInfo.AxisLength * 0.07f;
+			var centerColor = new Color(0xFF, 0xFF, 0xFF, 0xD0);
+
+			EffectRenderer.AddLine(gizmoInfo.CenterX - centerSize, gizmoInfo.CenterY, gizmoInfo.CenterZ,
+				gizmoInfo.CenterX + centerSize, gizmoInfo.CenterY, gizmoInfo.CenterZ, centerColor);
+			EffectRenderer.AddLine(gizmoInfo.CenterX, gizmoInfo.CenterY - centerSize, gizmoInfo.CenterZ,
+				gizmoInfo.CenterX, gizmoInfo.CenterY + centerSize, gizmoInfo.CenterZ, centerColor);
+			EffectRenderer.AddLine(gizmoInfo.CenterX, gizmoInfo.CenterY, gizmoInfo.CenterZ - centerSize,
+				gizmoInfo.CenterX, gizmoInfo.CenterY, gizmoInfo.CenterZ + centerSize, centerColor);
+
+			EffectRenderer.EndRenderingLines(cameraMatrix, projectionMatrix);
 		}
 
 		public void UpdateViewer()

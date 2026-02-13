@@ -100,6 +100,35 @@ namespace Effekseer.GUI.Dock
 				}
 			}
 
+			if (Manager.effectViewer != null)
+			{
+				Manager.NativeManager.SameLine();
+
+				string unavailableReason;
+				var canUseMoveInViewport = Manager.effectViewer.CanUseMoveInViewport(out unavailableReason);
+				var isMoveInViewportEnabled = Manager.effectViewer.IsMoveInViewportModeEnabled;
+				var isDisabled = !isMoveInViewportEnabled && !canUseMoveInViewport;
+
+				Manager.NativeManager.BeginDisabled(isDisabled);
+				if (Manager.NativeManager.ToggleButton(Icons.PanelLocation + " Move in Viewport###MoveInViewport", ref isMoveInViewportEnabled))
+				{
+					Manager.effectViewer.SetMoveInViewportMode(isMoveInViewportEnabled);
+				}
+				Manager.NativeManager.EndDisabled();
+
+				if (Manager.NativeManager.IsItemHovered())
+				{
+					if (isDisabled)
+					{
+						Manager.NativeManager.SetTooltip(unavailableReason);
+					}
+					else
+					{
+						Manager.NativeManager.SetTooltip("Move selected node with XYZ gizmo in viewport.");
+					}
+				}
+			}
+
 			{
 				float spacing = Manager.NativeManager.GetStyleVar2(swig.ImGuiStyleVarFlags.ItemSpacing).X;
 				float buttonWidth = Manager.NativeManager.GetTextLineHeightWithSpacing();
