@@ -62,6 +62,42 @@ def isWin():
 def isMac():
     return platform.system() == 'Darwin'
 
+def resolve_msbuild_path():
+    msbuild_env = os.environ.get('MSBUILD', '').strip()
+    if msbuild_env:
+        # Allow values like "C:\Path\MSBuild.exe" in env var.
+        msbuild_env = msbuild_env.strip('"')
+        if os.path.isfile(msbuild_env):
+            return msbuild_env
+        raise Exception(
+            'MSBUILD is set, but path does not exist: {}. '
+            'Set MSBUILD to full path to MSBuild.exe.'.format(msbuild_env)
+        )
+
+    candidates = [
+        r"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\MSBuild.exe",
+    ]
+
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+
+    raise Exception(
+        'MSBuild.exe was not found. Set MSBUILD env var to full path to MSBuild.exe '
+        '(for example: C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe).'
+    )
+
 def wget(address):
     urllib.request.urlretrieve(address, os.path.basename(address))
 
@@ -143,23 +179,9 @@ if isMac():
 
 if env['IGNORE_BUILD'] == '0':
     os.makedirs('build', exist_ok=True)
+    msbuild_path = None
     if isWin():
-        candidates = [
-            r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
-            r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe",
-            r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
-            r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
-        ]
-
-        candidate = None
-        for candidate in candidates:
-            if os.path.exists(candidate):
-                msbuild_path = candidate
-                break
-
-        if msbuild_path is None:
-            raise Exception("MSBuild is not found")
-
+        msbuild_path = resolve_msbuild_path()
     elif isMac():
         msbuild_path = 'msbuild'
 
