@@ -145,6 +145,8 @@ namespace Effekseer.GUI.Dock
 		const float DistanceBase = 15.0f;
 		const float OrthoScaleBase = 16.0f;
 		const float MinimumAxisLength = 0.25f;
+		const uint MoveInViewportInactiveColor = 0xFFA0A0A0;
+		const uint MoveInViewportActiveColor = 0xFF6FE30B;
 
 		public bool IsHovered = false;
 
@@ -153,6 +155,11 @@ namespace Effekseer.GUI.Dock
 		float viewportRectSizeX = 0.0f;
 		float viewportRectSizeY = 0.0f;
 		bool hasViewportRect = false;
+		float moveToggleRectMinX = 0.0f;
+		float moveToggleRectMinY = 0.0f;
+		float moveToggleRectSizeX = 0.0f;
+		float moveToggleRectSizeY = 0.0f;
+		bool hasMoveToggleRect = false;
 
 		bool isMoveInViewportModeEnabled = false;
 		bool isMoveGizmoDragging = false;
@@ -193,6 +200,16 @@ namespace Effekseer.GUI.Dock
 		public bool IsMoveInViewportModeEnabled
 		{
 			get { return isMoveInViewportModeEnabled; }
+		}
+
+		public bool IsMouseOnMoveInViewportOverlay(swig.Vec2 mousePos)
+		{
+			return ContainsInMoveToggleRect(mousePos.X, mousePos.Y);
+		}
+
+		public void ToggleMoveInViewportMode()
+		{
+			SetMoveInViewportMode(!isMoveInViewportModeEnabled);
 		}
 
 		public bool CanUseMoveInViewport(out string reason)
@@ -264,6 +281,12 @@ namespace Effekseer.GUI.Dock
 			}
 
 			if (!hasViewportRect)
+			{
+				hoveredMoveAxis = MoveGizmoAxis.None;
+				return false;
+			}
+
+			if (!isMoveGizmoDragging && ContainsInMoveToggleRect(mousePos.X, mousePos.Y))
 			{
 				hoveredMoveAxis = MoveGizmoAxis.None;
 				return false;
@@ -733,6 +756,26 @@ namespace Effekseer.GUI.Dock
 			return true;
 		}
 
+		bool ContainsInMoveToggleRect(float x, float y)
+		{
+			if (!hasMoveToggleRect)
+			{
+				return false;
+			}
+
+			if (x < moveToggleRectMinX || x > moveToggleRectMinX + moveToggleRectSizeX)
+			{
+				return false;
+			}
+
+			if (y < moveToggleRectMinY || y > moveToggleRectMinY + moveToggleRectSizeY)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		static float DistancePointToSegment(MathVector2 p, MathVector2 p0, MathVector2 p1)
 		{
 			var segment = p1 - p0;
@@ -770,6 +813,9 @@ namespace Effekseer.GUI.Dock
 			contentSize.X = System.Math.Max(1, contentSize.X);
 			contentSize.Y = System.Math.Max(1, contentSize.Y - frameHeight - padding);
 
+			var imagePosX = Manager.NativeManager.GetCursorPosX();
+			var imagePosY = Manager.NativeManager.GetCursorPosY();
+
 			Manager.Viewer.ViewPointController.SetScreenSize((int)contentSize.X, (int)contentSize.Y);
 			Manager.Viewer.ViewPointController.Update();
 
@@ -801,6 +847,81 @@ namespace Effekseer.GUI.Dock
 			viewportRectSizeX = Manager.NativeManager.GetItemRectSizeX();
 			viewportRectSizeY = Manager.NativeManager.GetItemRectSizeY();
 			hasViewportRect = viewportRectSizeX > 1.0f && viewportRectSizeY > 1.0f;
+			hasMoveToggleRect = false;
+
+			DrawMoveInViewportToggleOverlay(imagePosX, imagePosY);
+		}
+
+		void DrawMoveInViewportToggleOverlay(float imagePosX, float imagePosY)
+		{
+			if (!hasViewportRect || viewportRectSizeX <= 1.0f || viewportRectSizeY <= 1.0f)
+			{
+				hasMoveToggleRect = false;
+				return;
+			}
+
+			var cursorPosX = Manager.NativeManager.GetCursorPosX();
+			var cursorPosY = Manager.NativeManager.GetCursorPosY();
+
+			var margin = 6.0f * Manager.DpiScale;
+			var buttonSize = Manager.NativeManager.GetFrameHeight();
+			var buttonPosX = imagePosX + viewportRectSizeX - buttonSize - margin;
+			var buttonPosY = imagePosY + margin;
+
+			var minPosX = imagePosX;
+			var maxPosX = imagePosX + Math.Max(0.0f, viewportRectSizeX - buttonSize);
+			var minPosY = imagePosY;
+			var maxPosY = imagePosY + Math.Max(0.0f, viewportRectSizeY - buttonSize);
+
+			buttonPosX = Math.Max(minPosX, Math.Min(maxPosX, buttonPosX));
+			buttonPosY = Math.Max(minPosY, Math.Min(maxPosY, buttonPosY));
+
+			Manager.NativeManager.SetCursorPosX(buttonPosX);
+			Manager.NativeManager.SetCursorPosY(buttonPosY);
+
+			string unavailableReason;
+			var canUseMoveInViewport = CanUseMoveInViewport(out unavailableReason);
+			var isMoveInViewportEnabled = IsMoveInViewportModeEnabled;
+			var isDisabled = !isMoveInViewportEnabled && !canUseMoveInViewport;
+			var iconColor = isMoveInViewportEnabled ? MoveInViewportActiveColor : MoveInViewportInactiveColor;
+
+			Manager.NativeManager.PushStyleColor(swig.ImGuiColFlags.Text, iconColor);
+
+			var isClicked = false;
+			Manager.NativeManager.BeginDisabled(isDisabled);
+			if (Manager.NativeManager.Button(Icons.PanelLocation + "###MoveInViewportOverlay", buttonSize, buttonSize))
+			{
+				isClicked = true;
+			}
+			Manager.NativeManager.EndDisabled();
+
+			if (isClicked && !isDisabled)
+			{
+				ToggleMoveInViewportMode();
+			}
+
+			moveToggleRectMinX = Manager.NativeManager.GetItemRectMinX();
+			moveToggleRectMinY = Manager.NativeManager.GetItemRectMinY();
+			moveToggleRectSizeX = Manager.NativeManager.GetItemRectSizeX();
+			moveToggleRectSizeY = Manager.NativeManager.GetItemRectSizeY();
+			hasMoveToggleRect = moveToggleRectSizeX > 1.0f && moveToggleRectSizeY > 1.0f;
+
+			Manager.NativeManager.PopStyleColor();
+
+			if (Manager.NativeManager.IsItemHovered())
+			{
+				if (isDisabled)
+				{
+					Manager.NativeManager.SetTooltip(unavailableReason);
+				}
+				else
+				{
+					Manager.NativeManager.SetTooltip("Move in Viewport");
+				}
+			}
+
+			Manager.NativeManager.SetCursorPosX(cursorPosX);
+			Manager.NativeManager.SetCursorPosY(cursorPosY);
 		}
 
 		private static int getLodIndexFromLodBit(int lodBits)

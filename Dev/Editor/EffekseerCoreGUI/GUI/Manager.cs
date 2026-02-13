@@ -654,13 +654,21 @@ namespace Effekseer.GUI
 				mousePos_pre = mousePos;
 			}
 
-			var isMoveGizmoControlling = false;
+			var isMoveOverlayInputBlocked = false;
 			if (effectViewer != null)
+			{
+				isMoveOverlayInputBlocked = effectViewer.IsMouseOnMoveInViewportOverlay(mousePos);
+			}
+
+			var isMoveGizmoControlling = false;
+			if (effectViewer != null && !isMoveOverlayInputBlocked)
 			{
 				isMoveGizmoControlling = effectViewer.UpdateMoveGizmoInput(mousePos);
 			}
 
-			if (!isMoveGizmoControlling && ((effectViewer == null && !NativeManager.IsAnyWindowHovered()) || (effectViewer != null && effectViewer.IsHovered)))
+			if (!isMoveOverlayInputBlocked &&
+				!isMoveGizmoControlling &&
+				((effectViewer == null && !NativeManager.IsAnyWindowHovered()) || (effectViewer != null && effectViewer.IsHovered)))
 			{
 				var result = ControllViewport();
 
